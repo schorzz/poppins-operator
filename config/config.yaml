@@ -1,0 +1,3 @@
+apiVersion: schorzz.poppins.com/v1alpha
+kind: Poppins
+projectName: poppins-operator

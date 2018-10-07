@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: poppins-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: poppins-operator
+  template:
+    metadata:
+      labels:
+        name: poppins-operator
+    spec:
+      serviceAccountName: poppins-operator
+      containers:
+        - name: poppins-operator
+          image: schorzz/poppins-operator:latest
+          ports:
+          - containerPort: 60000
+            name: metrics
+          command:
+          - poppins-operator
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: OPERATOR_NAME
+              value: "poppins-operator"

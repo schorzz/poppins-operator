@@ -1,0 +1,4 @@
+apiVersion: "schorzz.poppins.com/v1alpha"
+kind: "Poppins"
+metadata:
+  name: "example"
