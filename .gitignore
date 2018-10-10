@@ -1,6 +1,8 @@
 
 # Created by https://www.gitignore.io/api/go,jetbrains+all
 
+
+
 ### Go ###
 # Binaries for programs and plugins
 *.exe
@@ -18,6 +20,9 @@
 ### Go Patch ###
 /vendor/
 /Godeps/
+
+# k8s
+/tmp/
 
 ### JetBrains+all ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and WebStorm

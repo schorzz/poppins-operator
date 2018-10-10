@@ -29,6 +29,8 @@ func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 			logrus.Errorf("failed to create busybox pod : %v", err)
 			return err
 		}
+	//case *v1alpha.PoppinsList:
+		//
 	}
 	return nil
 }
@@ -44,7 +46,8 @@ func newbusyBoxPod(cr *v1alpha.Poppins) *corev1.Pod {
 			APIVersion: "v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "busy-box",
+			Name:      "busy-box13",
+			//Name:      cr.Labels["name"],
 			Namespace: cr.Namespace,
 			OwnerReferences: []metav1.OwnerReference{
 				*metav1.NewControllerRef(cr, schema.GroupVersionKind{
