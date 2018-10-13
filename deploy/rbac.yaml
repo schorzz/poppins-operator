@@ -4,16 +4,15 @@ metadata:
   name: poppins-operator
 rules:
 - apiGroups: [""]
-  resources:
-  - "*"
-  verbs:
-  - "*"
+  resources: ["*"]
+  verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+
 ---
 
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  name: poppins-operator
+  name: poppins-operator-binding
 subjects:
 - kind: ServiceAccount
   name: poppins-operator
@@ -23,50 +22,53 @@ roleRef:
   name: poppins-operator
   apiGroup: rbac.authorization.k8s.io
 
-#kind: Role
-#apiVersion: rbac.authorization.k8s.io/v1beta1
-#metadata:
-#  name: poppins-operator
-#rules:
-#- apiGroups:
-#  - schorzz.poppins.com
-#  resources:
-#  - "*"
-#  verbs:
-#  - "*"
-#- apiGroups:
-#  - ""
-#  resources:
-#  - pods
-#  - services
-#  - endpoints
-#  - persistentvolumeclaims
-#  - events
-#  - configmaps
-#  - secrets
-#  - namespaces
-#  verbs:
-#  - "*"
-#- apiGroups:
-#  - apps
-#  resources:
-#  - deployments
-#  - daemonsets
-#  - replicasets
-#  - statefulsets
-#  verbs:
-#  - "*"
-#
-#---
-#
-#kind: RoleBinding
-#apiVersion: rbac.authorization.k8s.io/v1beta1
-#metadata:
-#  name: poppins-operator
-#subjects:
-#- kind: ServiceAccount
-#  name: poppins-operator
-#roleRef:
-#  kind: Role
-#  name: poppins-operator
-#  apiGroup: rbac.authorization.k8s.io
+
+---
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: poppins-operator
+rules:
+- apiGroups:
+  - schorzz.poppins.com
+  resources:
+  - "*"
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - services
+  - endpoints
+  - persistentvolumeclaims
+  - events
+  - configmaps
+  - secrets
+  - namespaces
+  verbs:
+  - "*"
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - daemonsets
+  - replicasets
+  - statefulsets
+  verbs:
+  - "*"
+
+---
+
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: poppins-operator
+subjects:
+- kind: ServiceAccount
+  name: poppins-operator
+roleRef:
+  kind: Role
+  name: poppins-operator
+  apiGroup: rbac.authorization.k8s.io

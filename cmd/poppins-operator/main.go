@@ -7,10 +7,9 @@ import (
 	"github.com/operator-framework/operator-sdk/pkg/sdk"
 	"github.com/operator-framework/operator-sdk/pkg/util/k8sutil"
 	sdkVersion "github.com/operator-framework/operator-sdk/version"
-	corev1 "k8s.io/api/core/v1"
+	"github.com/schorzz/poppins-operator/pkg/rest"
 	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"github.com/schorzz/poppins-operator/pkg/stub"
-	"github.com/schorzz/poppins-operator/pkg/rest"
 	"github.com/sirupsen/logrus"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"net/http"
@@ -45,14 +44,17 @@ func main() {
 
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/namespaces", rest.GetAllNamespaces)
-	//http.HandleFunc("/namespaces", getAll)
+	router.HandleFunc("/poppinses", rest.GetAllPoppinses)
+	router.HandleFunc("/namespaces/pods", rest.GetAllPodsAllNamespaces)
+	router.HandleFunc("/poppins", rest.CreatePoppins)
 	go func() {
 		http.ListenAndServe("0.0.0.0:8080", router)
 	}()
 
 	logrus.Infof("started webserver")
 
-	sdk.Watch(resource, kind, corev1.NamespaceAll, resyncPeriod)
+	//sdk.Watch(resource, kind, corev1.NamespaceAll, resyncPeriod)
+	sdk.Watch(resource, kind, namespace, resyncPeriod)
 	sdk.Handle(stub.NewHandler())
 	sdk.Run(context.TODO())
 
