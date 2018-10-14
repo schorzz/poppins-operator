@@ -3,7 +3,9 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"net/http"
+	"time"
 )
 
 type ListNamespaceResponse struct {
@@ -15,12 +17,17 @@ type ListPoppinsesResponse struct {
 }
 
 type ListPodsAllNamespaces struct {
-	Pods []string `json:"pods"`
+	Pods 	[]string 	`json:"pods"`
 }
 type ListResponse struct {
-	Type string `json:"type"`
-	Data []string `json:"data"`
+	Type 	string 		`json:"type"`
+	Data 	[]string 	`json:"data"`
 }
+type PoppinsListElementResponse struct {
+	Name 		string 		`json:"name"`
+	Namespace 	string 		`json:"namespace"`
+	ExpireDate	time.Time 	`json:"expire_date,omitempty"`
+} 
 
 func GetAllNamespaces(w http.ResponseWriter, r *http.Request){
 	callable := RestController{}
@@ -46,7 +53,7 @@ func GetAllNamespaces(w http.ResponseWriter, r *http.Request){
 	//}
 	//fmt.Fprintf(w, string(jsonResponse))
 }
-func GetAllPoppinses(w http.ResponseWriter, r *http.Request)  {
+func GetAllPoppinsNamespaces(w http.ResponseWriter, r *http.Request)  {
 	callable := RestController{}
 	GetList(w, r, "poppinses", callable.ListPoppinses)
 	//w.Header().Add("Content-Type", "application/json")
@@ -70,7 +77,7 @@ func GetAllPoppinses(w http.ResponseWriter, r *http.Request)  {
 	//}
 	//fmt.Fprintf(w, string(jsonResponse))
 }
-func GetAllPodsAllNamespaces(w http.ResponseWriter, r *http.Request)  {
+func GetAllPodsNamespaces(w http.ResponseWriter, r *http.Request)  {
 	callable := RestController{}//.ListPodsInAllNamespaces
 
 	GetList(w, r, "pods", callable.ListPodsInAllNamespaces)
@@ -96,7 +103,7 @@ func GetAllPodsAllNamespaces(w http.ResponseWriter, r *http.Request)  {
 	//fmt.Fprintf(w, string(jsonResponse))
 }
 
-func GetList(w http.ResponseWriter, r *http.Request,dataname string, f func()([]string, error))  {
+func GetList(w http.ResponseWriter, r *http.Request, dataname string, f func()([]string, error))  {
 	w.Header().Add("Content-Type", "application/json")
 	response := ListResponse{}
 
@@ -122,5 +129,26 @@ func GetList(w http.ResponseWriter, r *http.Request,dataname string, f func()([]
 func CreatePoppins(w http.ResponseWriter, r *http.Request) {
 	controller := RestController{}
 
-	controller.CreatePoppins()
+	controller.CreatePoppins("default")
+}
+func GetAllPoppinses(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+
+	rc := RestController{}
+	list, err := rc.GetPoppinses()
+
+	if err != nil{
+		logrus.Error(err)
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	jsonResponse, err := json.Marshal(list)
+
+	if err != nil{
+		logrus.Error(err)
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	fmt.Fprintf(w, string(jsonResponse))
+
 }

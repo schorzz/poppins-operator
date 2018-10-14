@@ -44,9 +44,10 @@ func main() {
 
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/namespaces", rest.GetAllNamespaces)
-	router.HandleFunc("/poppinses", rest.GetAllPoppinses)
-	router.HandleFunc("/namespaces/pods", rest.GetAllPodsAllNamespaces)
+	router.HandleFunc("/namespaces/poppinses", rest.GetAllPoppinsNamespaces)
+	router.HandleFunc("/namespaces/pods", rest.GetAllPodsNamespaces)
 	router.HandleFunc("/poppins", rest.CreatePoppins)
+	router.HandleFunc("/poppinses", rest.GetAllPoppinses)//kk
 	go func() {
 		http.ListenAndServe("0.0.0.0:8080", router)
 	}()

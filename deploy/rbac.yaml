@@ -3,7 +3,7 @@ apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   name: poppins-operator
 rules:
-- apiGroups: [""]
+- apiGroups: ["", "schorzz.poppins.com", "*"]
   resources: ["*"]
   verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
 

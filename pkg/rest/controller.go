@@ -2,11 +2,11 @@ package rest
 
 import (
 	"github.com/operator-framework/operator-sdk/pkg/sdk"
-	"github.com/operator-framework/operator-sdk/pkg/util/k8sutil"
 	"github.com/schorzz/poppins-operator/pkg/apis/schorzz/v1alpha"
+	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
+	"time"
 )
 
 type RestController struct {
@@ -17,8 +17,8 @@ type RestController struct {
 func NewRestController() *RestController {
 	controller := RestController{}
 	controller.ExcludedNamespaces = []string{"default", "kube-public", "kube-system"}
-	controller.SearchNameSpace, _ = k8sutil.GetWatchNamespace()
-	//controller.SearchNameSpace = ""
+	//controller.SearchNameSpace, _ = k8sutil.GetWatchNamespace()
+	controller.SearchNameSpace = ""
 	return &controller
 }
 
@@ -70,10 +70,11 @@ func (rc *RestController) ListPoppinses() ([]string, error){
 	poppinsList := &v1alpha.PoppinsList{
 		TypeMeta: metav1.TypeMeta{
 			Kind: 		"Poppins",
-			APIVersion: "v1alpha",
-		},
-	}
+			APIVersion: "schorzz.poppins.com/v1alpha",
 
+		},
+
+	}
 	// change namespace to operator namespace or ""
 
 	err := sdk.List(rc.SearchNameSpace, poppinsList)
@@ -90,21 +91,59 @@ func (rc *RestController) ListPoppinses() ([]string, error){
 	}
 	return list, nil
 }
-func (rc RestController) CreatePoppins() {
+func (rc RestController) CreatePoppins(namespace string) {
 	//labels := map[string]string{
 	//	"poppins": "code-",
 	//}
 	poppins := &v1alpha.Poppins{
 		TypeMeta: metav1.TypeMeta{
 			Kind: 		"Poppins",
-			APIVersion:	"v1alpha",
+			APIVersion:	"schorzz.poppins.com/v1alpha",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "code-created",
+			Namespace: namespace,
+		},
+		Spec:v1alpha.PoppinsSpec{
+			ExpireDate: time.Now().UTC(),
 		},
 	}
 	err := sdk.Create(poppins)
 	if err != nil {
 		panic(err)
 	}
+}
+func (rc RestController)GetPoppinses() ([]PoppinsListElementResponse, error){
+	list := []PoppinsListElementResponse{}
+
+
+	poppinsList := &v1alpha.PoppinsList{
+		TypeMeta: metav1.TypeMeta{
+			Kind: 		"Poppins",
+			APIVersion: "schorzz.poppins.com/v1alpha",
+
+		},
+
+	}
+	// change namespace to operator namespace or ""
+
+	err := sdk.List(rc.SearchNameSpace, poppinsList)
+
+	if err != nil {
+		logrus.Error(err)
+		return list, err
+		//panic(err.Error())
+	}
+	for _, elem := range poppinsList.Items{
+
+		poppins := PoppinsListElementResponse{}
+
+		poppins.Namespace = elem.Namespace
+		poppins.Name = elem.Name
+		poppins.ExpireDate = elem.Spec.ExpireDate
+		
+		list = append(list, poppins)
+	}
+	return list, nil
+
 }

@@ -2,6 +2,7 @@ package v1alpha
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"time"
 )
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -22,7 +23,7 @@ type Poppins struct {
 }
 
 type PoppinsSpec struct {
-	// Fill me
+	ExpireDate time.Time `json:"expire_date"`
 }
 type PoppinsStatus struct {
 	// Fill me
