@@ -43,11 +43,13 @@ func main() {
 
 
 	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/namespaces", rest.GetAllNamespaces)
-	router.HandleFunc("/namespaces/poppinses", rest.GetAllPoppinsNamespaces)
-	router.HandleFunc("/namespaces/pods", rest.GetAllPodsNamespaces)
-	router.HandleFunc("/poppins", rest.CreatePoppins)
-	router.HandleFunc("/poppinses", rest.GetAllPoppinses)//kk
+	router.HandleFunc("/namespaces", rest.GetAllNamespaces).Methods("GET")
+	router.HandleFunc("/namespaces/poppinses", rest.GetAllPoppinsNamespaces).Methods("GET")
+	router.HandleFunc("/namespaces/pods", rest.GetAllPodsNamespaces).Methods("GET")
+	router.HandleFunc("/poppins", rest.CreatePoppins).Methods("POST")
+	router.HandleFunc("/poppinses", rest.GetAllPoppinses).Methods("GET")//.Queries("expired_since","{expired_since}")//kk
+	router.HandleFunc("/poppinses/expired", rest.GetAllExpiredPoppinses).Methods("GET")//.Queries("since", "{since}")
+	//router.Get("poppinses").Queries("expired_since","")
 	go func() {
 		http.ListenAndServe("0.0.0.0:8080", router)
 	}()

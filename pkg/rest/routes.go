@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+const TIMEQUERYLAYOUT  = "2006-01-02"
+
 type ListNamespaceResponse struct {
 	Namespaces []string `json:"namespaces"`
 }
@@ -143,6 +145,39 @@ func GetAllPoppinses(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	jsonResponse, err := json.Marshal(list)
+
+	if err != nil{
+		logrus.Error(err)
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	fmt.Fprintf(w, string(jsonResponse))
+
+}
+func GetAllExpiredPoppinses(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+
+	sinceQuery := r.FormValue("since")
+
+	since, err := time.Parse(TIMEQUERYLAYOUT, sinceQuery)
+	if err != nil{
+		logrus.Error(err)
+		since = time.Now()
+	}
+
+	rc := RestController{}
+	list, err := rc.GetPoppinses()
+
+	if err != nil{
+		logrus.Error(err)
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	filteredList := []PoppinsListElementResponse{}
+	filteredList = rc.FilterExpiredPoppinsList(list, since)
+
+	jsonResponse, err := json.Marshal(filteredList)
 
 	if err != nil{
 		logrus.Error(err)

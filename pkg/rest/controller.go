@@ -105,7 +105,7 @@ func (rc RestController) CreatePoppins(namespace string) {
 			Namespace: namespace,
 		},
 		Spec:v1alpha.PoppinsSpec{
-			ExpireDate: time.Now().UTC(),
+			ExpireDate: time.Now().UTC().Add(time.Hour),
 		},
 	}
 	err := sdk.Create(poppins)
@@ -141,9 +141,21 @@ func (rc RestController)GetPoppinses() ([]PoppinsListElementResponse, error){
 		poppins.Namespace = elem.Namespace
 		poppins.Name = elem.Name
 		poppins.ExpireDate = elem.Spec.ExpireDate
-		
+
 		list = append(list, poppins)
 	}
 	return list, nil
 
+}
+func (rc RestController) FilterExpiredPoppinsList(poppinslist []PoppinsListElementResponse, expireDate time.Time) []PoppinsListElementResponse {
+	newList := []PoppinsListElementResponse{}
+
+	for _, elem := range poppinslist{
+		if elem.ExpireDate.Before(expireDate){
+			newList = append(newList, elem)
+			logrus.Infof("added %s to filtered list", elem)
+		}
+	}
+
+	return newList
 }
