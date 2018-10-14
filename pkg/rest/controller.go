@@ -4,6 +4,7 @@ import (
 	"github.com/operator-framework/operator-sdk/pkg/sdk"
 	"github.com/schorzz/poppins-operator/pkg/apis/schorzz/v1alpha"
 	"github.com/sirupsen/logrus"
+	"k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
@@ -21,6 +22,14 @@ func NewRestController() *RestController {
 	controller.SearchNameSpace = ""
 	return &controller
 }
+
+type Deletable struct {
+	Name 		string 	`json:"name"`
+	Namespace 	string	`json:"namespace"`
+	Kind 		string	`json:"kind"`
+	APIVersion 	string	`json:"api_version"`
+}
+
 
 func (rc *RestController) ListPodsInAllNamespaces() ([]string, error){
 
@@ -91,7 +100,7 @@ func (rc *RestController) ListPoppinses() ([]string, error){
 	}
 	return list, nil
 }
-func (rc RestController) CreatePoppins(namespace string) {
+func (rc *RestController) CreatePoppins(namespace string) *v1alpha.Poppins{
 	//labels := map[string]string{
 	//	"poppins": "code-",
 	//}
@@ -112,8 +121,9 @@ func (rc RestController) CreatePoppins(namespace string) {
 	if err != nil {
 		panic(err)
 	}
+	return poppins
 }
-func (rc RestController)GetPoppinses() ([]PoppinsListElementResponse, error){
+func (rc *RestController)GetPoppinses() ([]PoppinsListElementResponse, error){
 	list := []PoppinsListElementResponse{}
 
 
@@ -147,7 +157,7 @@ func (rc RestController)GetPoppinses() ([]PoppinsListElementResponse, error){
 	return list, nil
 
 }
-func (rc RestController) FilterExpiredPoppinsList(poppinslist []PoppinsListElementResponse, expireDate time.Time) []PoppinsListElementResponse {
+func (rc *RestController) FilterExpiredPoppinsList(poppinslist []PoppinsListElementResponse, expireDate time.Time) []PoppinsListElementResponse {
 	newList := []PoppinsListElementResponse{}
 
 	for _, elem := range poppinslist{
@@ -159,3 +169,146 @@ func (rc RestController) FilterExpiredPoppinsList(poppinslist []PoppinsListEleme
 
 	return newList
 }
+//func (rc RestController) DeleteFromPoppins(expiredPoppins []PoppinsListElementResponse, ) error{
+//	for _, elem := range expiredPoppins{
+//		elem
+//		//delete everything here
+//	}
+//	return nil
+//}
+//func (rc RestController)DeleteDeploymentsFromNamespace(namespace string) {
+//	deployments := v1beta1.DeploymentList{
+//		TypeMeta: metav1.TypeMeta{
+//			Kind:			"Deployment",
+//			APIVersion: 	"apps/v1",
+//		},
+//	}
+//
+//	err := sdk.List(namespace, &deployments)
+//
+//	if err != nil{
+//		logrus.Error(err)
+//	}
+//	for _, elem := range deployments.Items{
+//		err = sdk.Delete(elem)
+//	}
+//}
+func (rc *RestController) DeleteDeployments(expiredPoppins []PoppinsListElementResponse, deletables []Deletable) []Deletable{
+	deployments := v1.DeploymentList{
+		TypeMeta: metav1.TypeMeta{
+			Kind:			"Deployment",
+			APIVersion: 	"apps/v1",
+		},
+	}
+	if deletables == nil {
+		deletables = []Deletable{}
+	}
+
+	for _, elem := range expiredPoppins{
+		err := sdk.List(elem.Namespace, &deployments)
+
+		if err != nil{
+			logrus.Error(err)
+		}
+
+		for _, elem := range deployments.Items{
+			temp := Deletable{}
+			temp.Name = elem.Name
+			temp.Namespace = elem.Namespace
+			temp.Kind = elem.Kind
+			temp.APIVersion = elem.APIVersion
+			logrus.Infof("Delete Deployment: {}", elem)
+			deletables = append(deletables, temp)
+			sdk.Delete(&elem)
+		}
+	}
+	return deletables
+
+}
+func (rc *RestController) DeletePods(expiredPoppins []PoppinsListElementResponse, deletables []Deletable) []Deletable{
+	pods := corev1.PodList{
+		TypeMeta: metav1.TypeMeta{
+			Kind: 		"Pod",
+			APIVersion: "v1",
+		},
+	}
+	if deletables == nil {
+		deletables = []Deletable{}
+	}
+
+	for _, elem := range expiredPoppins{
+		err := sdk.List(elem.Namespace, &pods)
+
+		if err != nil{
+			logrus.Error(err)
+		}
+
+		for _, elem := range pods.Items{
+			temp := Deletable{}
+			temp.Name = elem.Name
+			temp.Namespace = elem.Namespace
+			temp.Kind = elem.Kind
+			temp.APIVersion = elem.APIVersion
+			deletables = append(deletables, temp)
+			logrus.Infof("Delete %s: %s", elem.Kind, elem)
+			sdk.Delete(&elem)
+		}
+	}
+
+	return deletables
+}
+func (rc *RestController) DeletePoppinses(expiredPoppins []PoppinsListElementResponse, deletables []Deletable) []Deletable{
+	poppinses := v1alpha.PoppinsList{
+		TypeMeta: metav1.TypeMeta{
+			Kind: 		"Poppins",
+			APIVersion: "schorzz.poppins.com/v1alpha",
+		},
+	}
+	if deletables == nil {
+		deletables = []Deletable{}
+	}
+
+	for _, elem := range expiredPoppins{
+		err := sdk.List(elem.Namespace, &poppinses)
+
+		if err != nil{
+			logrus.Error(err)
+		}
+
+		for _, elem := range poppinses.Items{
+			temp := Deletable{}
+			temp.Name = elem.Name
+			temp.Namespace = elem.Namespace
+			temp.Kind = elem.Kind
+			temp.APIVersion = elem.APIVersion
+			deletables = append(deletables, temp)
+			logrus.Infof("Delete %s: %s", elem.Kind, elem)
+			sdk.Delete(&elem)
+		}
+	}
+
+	return deletables
+}
+
+
+
+//func (rc RestController) delete(deletable Deletable){
+//	switch deletable.Kind {
+//	case "Deployment":
+//		labels := map[string]string{
+//			"name": deletable.Name,
+//		}
+//		deployment := v1.Deployment{
+//			TypeMeta: 	metav1.TypeMeta{
+//				Kind:			"Deployment",
+//				APIVersion: 	deletable.APIVersion,
+//			},
+//			ObjectMeta: metav1.ObjectMeta{
+//				Labels:			labels,
+//			},
+//		}
+//		sdk.Delete(&deployment)
+//		break
+//
+//	}
+//}

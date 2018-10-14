@@ -17,14 +17,8 @@ build:
 	docker push schorzz/poppins-operator
 
 create-ns:
-	kubectl create -f deploy/sa.yaml -n poppins
-	kubectl create -f deploy/rbac.yaml -n poppins
-	kubectl create -f deploy/crd.yaml -n poppins
-	kubectl create -f deploy/operator.yaml -n poppins
+	kubectl create -f deploy/cr.yaml -n poppins
+	kubectl create -f deploy/busybox-deployment.yaml -n poppins
 delete-ns:
-	kubectl delete -f deploy/sa.yaml -n poppins
-	kubectl delete -f deploy/rbac.yaml -n poppins
-	kubectl delete -f deploy/crd.yaml -n poppins
-	kubectl delete -f deploy/operator.yaml -n poppins
-	kubectl delete service/poppins-operator -n poppins
 	kubectl delete -f deploy/cr.yaml -n poppins
+	kubectl delete -f deploy/busybox-deployment.yaml -n poppins
