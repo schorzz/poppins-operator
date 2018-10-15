@@ -19,12 +19,8 @@ type Poppins struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata"`
 	Spec              PoppinsSpec   `json:"spec"`
-	Status            PoppinsStatus `json:"status,omitempty"`
 }
 
 type PoppinsSpec struct {
 	ExpireDate time.Time `json:"expire_date"`
-}
-type PoppinsStatus struct {
-	// Fill me
 }

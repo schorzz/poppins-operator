@@ -7,6 +7,18 @@ info:
 
     A Poppins is a CRD and operator for kubernetes, which enables kubernetes to give namespaces an expiry date.
     After the namespace is expired, the poppins-operator will delete deployments and pods.
+
+    The Poppins-operator is a kubernetes operator. The Operator offers CRUD-operations
+    on poppins ressource definitions (RDs). Its the goal of this operator to "clean-up"
+    namespaces after they expire. A namespace is expired, if the expiry date is exceeded.
+    This expiry date is defined in the poppins RD.
+
+    Every Namespace, that can expire and needs to be deleted automatically, should have a
+    poppins RD.
+
+    This operator offers the possibility to create and update poppinses (poppins RDs).
+    Deleting a poppins is not provided because it shouldn't be able to delete poppinses via
+    ReST.
   version: 1.0.0
 
 tags:
@@ -15,7 +27,37 @@ tags:
     Kubernetes needs some endpoints to functional correctly
 - name: Poppins
   description: |
-    Poppins-Operator endpoints
+    It is possible to create and update poppinses. The operator provides a possibility to list all expired
+    and non-expired poppinses.
+
+    The delete-flow describes the use case to delete every deployment and pod in expired namespaces:
+
+    <div class="diagram">
+      sequenceDiagram
+          participant Admin as Admin
+          participant API as API
+          activate Admin
+          Admin ->> API: GET /poppinses/expired
+          activate API
+          Note right of API: Get all<br>expired namespaces
+          API -->> Admin: List of expired namespaces
+          deactivate API
+          opt update poppinses
+            loop for every namespace
+            Note right of API: update expired<br>namespaces
+            Admin ->> API: PUT /poppins
+            activate API
+            API -->> Admin: -
+            deactivate API
+            end
+          end
+          Admin ->>API: DELETE /poppinses/expired
+          activate API
+          API -->> Admin: List of deleted Ressources
+          deactivate API
+          Note right of API: cleanup every expired<br>namespace
+          deactivate Admin
+    </div>
 
 x-tagGroups:
 - name: General
@@ -226,8 +268,7 @@ components:
                   expire_date:
                     type: string
                     description: The expiry date of the namespace where the Poppins lays
-              status:
-                type: object
+
 
   requestBodies:
     PoppinsRequest:
