@@ -1,0 +1,253 @@
+openapi: 3.0.0
+info:
+  title: Poppins API Spec
+  contact:
+    email: p.hoeling@gmail.com
+  description: |-
+
+    A Poppins is a CRD and operator for kubernetes, which enables kubernetes to give namespaces an expiry date.
+    After the namespace is expired, the poppins-operator will delete deployments and pods.
+  version: 1.0.0
+
+tags:
+- name: k8s
+  description: |
+    Kubernetes needs some endpoints to functional correctly
+- name: Poppins
+  description: |
+    Poppins-Operator endpoints
+
+x-tagGroups:
+- name: General
+  tags:
+  - Poppins
+  - k8s
+
+paths:
+  /metrics:
+    get:
+      tags:
+      - k8s
+      description: |
+        shows Go metrics
+      responses:
+        '200':
+          description: OK #TODO
+  /healthz:
+    get:
+      tags:
+      - k8s
+      summary: kubernetes health-probe
+      responses:
+        '200':
+          description: OK
+
+  /namespaces:
+    get:
+      tags:
+      - Poppins
+      summary: List every accessable namespace
+      description: |
+        List every accessable namespace.
+      responses:
+        '200':
+          $ref: '#/components/responses/Callable'
+
+  /namespaces/poppinses:
+    get:
+      tags:
+      - Poppins
+      - k8s
+      summary: List namespaces with poppins
+      description: |
+        Lists every Namespace, that has a Poppins
+      responses:
+        '200':
+          $ref: '#/components/responses/Callable'
+  /poppins:
+    post:
+      tags:
+      - Poppins
+      summary: Create a new Poppins
+      description: |
+        The Poppins-CRD gives a namespace an expiry date.
+      requestBody:
+        $ref: '#/components/requestBodies/PoppinsRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/PoppinsSpec'
+        '400':
+          description: Bad request
+    put:
+      tags:
+      - Poppins
+      summary: Update a Poppins
+      description: To extend a expiry date, its possible to update a poppins
+      requestBody:
+        $ref: '#/components/requestBodies/PoppinsRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/PoppinsSpec'
+        '400':
+          description: Bad request
+
+  /poppinses:
+    get:
+      tags:
+      - Poppins
+      summary: List all poppinses
+      description: List all namespaces with poppinses
+      responses:
+        '200':
+          $ref: '#/components/responses/ListView'
+
+  /poppinses/expired:
+    get:
+      tags:
+      - Poppins
+      summary: List expired Poppinses
+      description: List all Poppinses that are expired
+      responses:
+        '200':
+          $ref: '#/components/responses/ListView'
+
+    delete:
+      tags:
+      - Poppins
+      summary: Delete expired Namespaces
+      description: |
+        Cleanup namespaces: delete every:
+        * Deployment
+        * Pod
+        from every expired namespace.
+
+        Returns a list of every deleted ressource
+      responses:
+        '200':
+          $ref: '#/components/responses/ListView'
+
+
+
+components:
+  schemas:
+    ListElem:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the CRD
+          example: test
+        namespace:
+          type: string
+          description: name of the namespace where the CRD is in
+          example: default
+        expire_date:
+          type: string
+          description: Date when the namespace expires
+          example: 2018-10-21T22:16:14.740744446Z
+
+  responses:
+    Callable:
+      description: ""
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+                description: Type, which is shown, like Pods, Namespaces,..
+                example: namespaces
+              data:
+                type: array
+                items:
+                  type: string
+                  description: Name of the shown ressource
+                  example: default
+            example:
+              type: namespaces
+              data: [default,kube-public,kube-system]
+
+    ListView:
+      description: ""
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ListElem'
+
+    PoppinsSpec:
+      description: ""
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              kind:
+                type: string
+                description: Is always `Poppins`
+                enum:
+                - Poppins
+              apiVersion:
+                type: string
+                description: The API-version of the Poppins
+                example: schorzz.poppins.com/v1alpha
+              metadata:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: Name of the poppins
+                    example: douglas-adams
+                  namespace:
+                    type: string
+                    description: The namespace of the poppins
+                    example: default
+                  selflink:
+                    type: string
+                    example: /apis/schorzz.poppins.com/v1alpha/namespaces/default/poppinses/douglas-adams
+                  uid:
+                    type: string
+                    format: uuid
+                    example: 8c1b0dd7-d007-11e8-b543-74d43582b66c
+                  ressourceVersion:
+                    type: string
+                    example: 294594
+                  generation:
+                    type: integer
+                    example: 1
+                  creationTimestamp:
+                    type: string
+                    example: 2018-10-14T23:19:06Z
+              spec:
+                type: object
+                properties:
+                  expire_date:
+                    type: string
+                    description: The expiry date of the namespace where the Poppins lays
+              status:
+                type: object
+
+  requestBodies:
+    PoppinsRequest:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                description: Name of the Poppins
+                example: Douglas Adams
+              namespace:
+                type: string
+                description: Name of the namespace where the poppins should be put
+                example: default
+              expire_date:
+                type: string
+                description: Date when the namespace expires
+                example: 2011-11-09T00:00:00Z
+            required:
+            - name
+            - namespace

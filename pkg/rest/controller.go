@@ -2,6 +2,7 @@ package rest
 
 import (
 	"github.com/operator-framework/operator-sdk/pkg/sdk"
+	"github.com/schorzz/poppins-operator/config"
 	"github.com/schorzz/poppins-operator/pkg/apis/schorzz/v1alpha"
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/apps/v1"
@@ -100,29 +101,63 @@ func (rc *RestController) ListPoppinses() ([]string, error){
 	}
 	return list, nil
 }
-func (rc *RestController) CreatePoppins(namespace string) *v1alpha.Poppins{
+func (rc *RestController) CreatePoppins(namespace string, name string, expireDate time.Time) (*v1alpha.Poppins, error){
 	//labels := map[string]string{
 	//	"poppins": "code-",
 	//}
+	if expireDate.Before(time.Now()){
+		expireDate = time.Now().UTC().Add(config.DEFAULTEXPIRETIME)
+	}
+
 	poppins := &v1alpha.Poppins{
 		TypeMeta: metav1.TypeMeta{
 			Kind: 		"Poppins",
 			APIVersion:	"schorzz.poppins.com/v1alpha",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "code-created",
+			Name: name,
 			Namespace: namespace,
 		},
 		Spec:v1alpha.PoppinsSpec{
-			ExpireDate: time.Now().UTC().Add(time.Hour),
+			ExpireDate: expireDate,
 		},
 	}
 	err := sdk.Create(poppins)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return poppins
+	return poppins, nil
 }
+
+func (rc *RestController) UpdatePoppins(namespace string, name string, expireDate time.Time) (*v1alpha.Poppins, error){
+	logrus.Infof("local from expiredate: %s",expireDate.Local())
+	if expireDate.Before(time.Now()){
+		expireDate = time.Now().UTC().Add(config.DEFAULTEXPIRETIME)
+	}
+
+	poppins := &v1alpha.Poppins{
+		TypeMeta: metav1.TypeMeta{
+			Kind: 		"Poppins",
+			APIVersion:	"schorzz.poppins.com/v1alpha",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+			Namespace: namespace,
+		},
+	}
+	err := sdk.Get(poppins)
+	if err != nil {
+		return nil, err
+	}
+	poppins.Spec.ExpireDate = expireDate
+	err = sdk.Update(poppins)
+	if err != nil {
+		return nil, err
+	}
+
+	return poppins, nil
+}
+
 func (rc *RestController)GetPoppinses() ([]PoppinsListElementResponse, error){
 	list := []PoppinsListElementResponse{}
 

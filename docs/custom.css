@@ -1,0 +1,24 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+.menu-content :first-child img {
+    padding: 20px 80px 14px 80px;
+}
+/* diagrams (mermaid) */
+div.diagram .actor {
+    fill: #50AAFA !important;
+}
+div.diagram text.actor {
+    stroke: none !important;
+    fill: #000546 !important;
+}
+div.diagram .note {
+    fill: #F5D228 !important;
+    stroke-width: 0.5px !important;
+
+}
+div.diagram .noteText {
+    font-family: Roboto, sans-serif !important;
+    fill: #000546 !important;
+}

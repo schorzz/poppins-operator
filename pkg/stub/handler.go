@@ -2,8 +2,6 @@ package stub
 
 import (
 	"context"
-	"github.com/sirupsen/logrus"
-
 	"github.com/schorzz/poppins-operator/pkg/apis/schorzz/v1alpha"
 
 	"github.com/operator-framework/operator-sdk/pkg/sdk"
@@ -21,17 +19,15 @@ type Handler struct {
 }
 
 func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
-	switch o := event.Object.(type) {
-	case *v1alpha.Poppins:
-		logrus.Infof("event {}", o)
-		//err := sdk.Create(newbusyBoxPod(o))
-		//if err != nil && !errors.IsAlreadyExists(err) {
-		//	logrus.Errorf("failed to create busybox pod : %v", err)
-		//	return err
-		//}
-	//case *v1alpha.PoppinsList:
-		//
-	}
+	//switch o := event.Object.(type) {
+	//case *v1alpha.Poppins:
+	//	logrus.Infof("event {}", o)
+	//	//err := sdk.Create(newbusyBoxPod(o))
+	//	//if err != nil && !errors.IsAlreadyExists(err) {
+	//	//	logrus.Errorf("failed to create busybox pod : %v", err)
+	//	//	return err
+	//	//}
+	//}
 	return nil
 }
 
