@@ -13,7 +13,7 @@ create:
 	kubectl create -f deploy/crd.yaml
 	kubectl create -f deploy/operator.yaml
 build:
-	operator-sdk build schorzz/poppins-operator:latest
+	operator-sdk build schorzz/poppins-operator:develop
 	docker push schorzz/poppins-operator
 
 create-ns:

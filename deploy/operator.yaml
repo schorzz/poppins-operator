@@ -16,7 +16,7 @@ spec:
       serviceAccountName: poppins-operator
       containers:
         - name: poppins-operator
-          image: schorzz/poppins-operator:latest
+          image: schorzz/poppins-operator:develop
           ports:
           - containerPort: 60000
             name: metrics

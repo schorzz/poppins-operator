@@ -3,7 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/schorzz/poppins-operator/config"
+	"github.com/schorzz/poppins-operator/pkg/config"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -11,7 +11,7 @@ import (
 )
 
 var(
-	TIMEQUERYLAYOUT  = config.TIMEQUERYLAYOUT
+	TIMEQUERYLAYOUT  = config.NewRestConfigurator().TimeQueryLayout
 )
 
 type ListNamespaceResponse struct {
@@ -45,75 +45,11 @@ type HttpHelper struct {
 func GetAllNamespaces(w http.ResponseWriter, r *http.Request){
 	callable := RestController{}
 	GetList(w, r, "namespaces", callable.ListNamespaces)
-	//w.Header().Add("Content-Type", "application/json")
-	//controller := RestController{}
-	//response := ListNamespaceResponse{}
-	//
-	//list, err := controller.ListNamespaces()
-	//if err != nil {
-	//	fmt.Fprintf(w, "%s", err)
-	//	http.Error(w, err.Error(), 400)
-	//	panic(err)
-	//}
-	//if list == nil{
-	//	list = []string{}
-	//}
-	//response.Namespaces = list
-	//jsonResponse, err := json.Marshal(response)
-	//
-	//if err != nil{
-	//	panic(err)
-	//}
-	//fmt.Fprintf(w, string(jsonResponse))
 }
 func GetAllPoppinsNamespaces(w http.ResponseWriter, r *http.Request)  {
 	callable := RestController{}
 	GetList(w, r, "poppinses", callable.ListPoppinses)
-	//w.Header().Add("Content-Type", "application/json")
-	//controller := RestController{}
-	//response := ListPoppinsesResponse{}
-	//
-	//list, err := controller.ListPoppinses()
-	//if err != nil {
-	//	fmt.Fprintf(w, "%s", err)
-	//	http.Error(w, err.Error(), 400)
-	//	panic(err)
-	//}
-	//if list == nil{
-	//	list = []string{}
-	//}
-	//response.Poppinses = list
-	//jsonResponse, err := json.Marshal(response)
-	//
-	//if err != nil{
-	//	panic(err)
-	//}
-	//fmt.Fprintf(w, string(jsonResponse))
-}
-func GetAllPodsNamespaces(w http.ResponseWriter, r *http.Request)  {
-	callable := RestController{}//.ListPodsInAllNamespaces
 
-	GetList(w, r, "pods", callable.ListPodsInAllNamespaces)
-	//w.Header().Add("Content-Type", "application/json")
-	//controller := RestController{}
-	//response := ListPodsAllNamespaces{}
-	//
-	//list, err := controller.ListPodsInAllNamespaces()
-	//if err != nil {
-	//	fmt.Fprintf(w, "%s", err)
-	//	http.Error(w, err.Error(), 400)
-	//	panic(err)
-	//}
-	//if list == nil{
-	//	list = []string{}
-	//}
-	//response.Pods = list
-	//jsonResponse, err := json.Marshal(response)
-	//
-	//if err != nil{
-	//	panic(err)
-	//}
-	//fmt.Fprintf(w, string(jsonResponse))
 }
 
 func GetList(w http.ResponseWriter, r *http.Request, dataname string, f func()([]string, error))  {
@@ -143,7 +79,7 @@ func GetList(w http.ResponseWriter, r *http.Request, dataname string, f func()([
 }
 
 func CreatePoppins(w http.ResponseWriter, r *http.Request) {
-	controller := RestController{}
+	controller := NewRestController()
 	hh := HttpHelper{}
 
 	b, err := ioutil.ReadAll(r.Body)
@@ -183,7 +119,7 @@ func CreatePoppins(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdatePoppins(w http.ResponseWriter, r *http.Request) {
-	controller := RestController{}
+	controller := NewRestController()
 	hh := HttpHelper{}
 
 	b, err := ioutil.ReadAll(r.Body)
@@ -225,7 +161,7 @@ func UpdatePoppins(w http.ResponseWriter, r *http.Request) {
 func GetAllPoppinses(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 
-	rc := RestController{}
+	rc := NewRestController()
 	list, err := rc.GetPoppinses()
 
 	if err != nil{
@@ -253,7 +189,7 @@ func GetAllExpiredPoppinses(w http.ResponseWriter, r *http.Request) {
 		since = time.Now()
 	}
 
-	rc := RestController{}
+	rc := NewRestController()
 	list, err := rc.GetPoppinses()
 
 	if err != nil{
@@ -281,7 +217,7 @@ func DeleteAllExpiredPoppinses(w http.ResponseWriter, r *http.Request) {
 	hh := HttpHelper{}
 	since:= hh.getHeaderExpiredSince(r)
 
-	rc := RestController{}
+	rc := NewRestController()
 	list, err := rc.GetPoppinses()
 
 	if err != nil{
@@ -306,7 +242,7 @@ func DeleteAllExpiredPoppinses(w http.ResponseWriter, r *http.Request) {
 }
 func DeleteExpiredPoppins(w http.ResponseWriter, r *http.Request)  {
 	httpHelper := HttpHelper{}
-	rc := RestController{}
+	rc := NewRestController()
 
 	poppinses, err := rc.GetPoppinses()
 	if err != nil{
