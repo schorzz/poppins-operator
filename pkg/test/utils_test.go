@@ -5,11 +5,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
-
 func TestUtils(t *testing.T)  {
 	list := []string{"default", "13"}
 	elem := "default"
-	//
 	assert.True(t, rest.ListContains(list, elem))
-	//assert.True(t, true)
+	assert.False(t, rest.ListContains(list, "not in there"))
 }
