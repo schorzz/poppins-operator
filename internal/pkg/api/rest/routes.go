@@ -3,43 +3,42 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/schorzz/poppins-operator/pkg/apis/schorzz/v1alpha"
-	"github.com/schorzz/poppins-operator/internal/pkg/configurators"
+	models "github.com/schorzz/poppins-operator/internal/pkg/api/rest/models"
+	conf "github.com/schorzz/poppins-operator/internal/pkg/configurators"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"time"
 )
-
+//----------------------------------------------------
 var(
-	TIMEQUERYLAYOUT  = configurators.NewRestConfigurator().TimeQueryLayout
+	Config = conf.New(conf.Config{})
 )
-type ListResponse struct {
-	Type 	string 		`json:"type"`
-	Data 	[]string 	`json:"data"`
-}
-type PoppinsListElementResponse struct {
-	Name 		string 				`json:"name"`
-	Namespace 	string 				`json:"namespace"`
-	ExpireDates	v1alpha.PoppinsSpec `json:"expire_dates"`
+//----------------------------------------------------
+type RestController struct {
+	Writer http.ResponseWriter
+	Reader *http.Request
 }
 
-type HttpHelper struct {
-	//empty
+func (rc *RestController) jsonResponse(body string, statusCode int){
+	rc.Writer.Header().Add("Content-Type", "application/json")
+	rc.Writer.WriteHeader(statusCode)
+	fmt.Fprintf(rc.Writer, body)
 }
+//----------------------------------------------------
 func GetAllNamespaces(w http.ResponseWriter, r *http.Request){
-	callable := RestController{}
+	callable := K8sController{}
 	GetList(w, r, "namespaces", callable.ListNamespaces)
 }
 func GetAllPoppinsNamespaces(w http.ResponseWriter, r *http.Request)  {
-	callable := RestController{}
+	callable := K8sController{}
 	GetList(w, r, "poppinses", callable.ListPoppinses)
 
 }
 
 func GetList(w http.ResponseWriter, r *http.Request, dataname string, f func()([]string, error))  {
 	hh := HttpHelper{}
-	response := ListResponse{}
+	response := models.ListDTO{}
 
 	list, err := f()
 	if err != nil {
@@ -62,7 +61,7 @@ func GetList(w http.ResponseWriter, r *http.Request, dataname string, f func()([
 }
 
 func CreatePoppins(w http.ResponseWriter, r *http.Request) {
-	controller := NewRestController()
+	controller := NewK8sController()
 	hh := HttpHelper{}
 
 	b, err := ioutil.ReadAll(r.Body)
@@ -102,7 +101,7 @@ func CreatePoppins(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdatePoppins(w http.ResponseWriter, r *http.Request) {
-	controller := NewRestController()
+	controller := NewK8sController()
 	hh := HttpHelper{}
 
 	b, err := ioutil.ReadAll(r.Body)
@@ -144,7 +143,7 @@ func UpdatePoppins(w http.ResponseWriter, r *http.Request) {
 func GetAllPoppinses(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 
-	rc := NewRestController()
+	rc := NewK8sController()
 	list, err := rc.GetPoppinses()
 
 	if err != nil{
@@ -166,13 +165,13 @@ func GetAllPoppinses(w http.ResponseWriter, r *http.Request) {
 func GetAllExpiredPoppinses(w http.ResponseWriter, r *http.Request) {
 	sinceQuery := r.FormValue("since")
 
-	since, err := time.Parse(TIMEQUERYLAYOUT, sinceQuery)
+	since, err := time.Parse(Config.HttpTimeQueryLayout, sinceQuery)
 	if err != nil{
 		logrus.Error(err)
 		since = time.Now()
 	}
 
-	rc := NewRestController()
+	rc := NewK8sController()
 	list, err := rc.GetPoppinses()
 
 	if err != nil{
@@ -198,9 +197,9 @@ func GetAllExpiredPoppinses(w http.ResponseWriter, r *http.Request) {
 
 func DeleteAllExpiredPoppinses(w http.ResponseWriter, r *http.Request) {
 	hh := HttpHelper{}
-	since:= hh.getHeaderExpiredSince(r)
+	since:= hh.getQueryExpiredSince(r)
 
-	rc := NewRestController()
+	rc := NewK8sController()
 	list, err := rc.GetPoppinses()
 
 	if err != nil{
@@ -225,14 +224,14 @@ func DeleteAllExpiredPoppinses(w http.ResponseWriter, r *http.Request) {
 }
 func DeleteExpiredPoppins(w http.ResponseWriter, r *http.Request)  {
 	httpHelper := HttpHelper{}
-	rc := NewRestController()
+	rc := NewK8sController()
 
 	poppinses, err := rc.GetPoppinses()
 	if err != nil{
 		logrus.Error(err)
 	}
 
-	since := httpHelper.getHeaderExpiredSince(r)
+	since := httpHelper.getQueryExpiredSince(r)
 	expiredPoppinses := rc.FilterExpiredPoppinsList(poppinses, since)
 
 	deleted := rc.DeleteDeployments(expiredPoppinses, nil)
@@ -250,19 +249,16 @@ func DeleteExpiredPoppins(w http.ResponseWriter, r *http.Request)  {
 	httpHelper.Jsonresponse(w, string(jsonResponse), 200)
 
 }
-func (h *HttpHelper) getHeaderExpiredSince(r *http.Request)  time.Time{
+//TODO REFACTOR!!
+func (h *HttpHelper) getQueryExpiredSince(r *http.Request)  time.Time{
 	sinceQuery := r.FormValue("since")
 	//sinceQuery = sinc
 
-	since, err := time.Parse(TIMEQUERYLAYOUT, sinceQuery)
+	since, err := time.Parse(Config.HttpTimeQueryLayout, sinceQuery)
 	if err != nil{
 		logrus.Error(err)
 		since = time.Now()
 	}
 	return since
 }
-func (h *HttpHelper) Jsonresponse(w http.ResponseWriter, body string, status int){
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(status)
-	fmt.Fprintf(w, body)
-}
+

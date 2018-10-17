@@ -15,13 +15,13 @@ var (
 	EXPIRY_TIME = configurators.NewPoppinsConfigurator().Expiretime
 )
 
-type RestController struct {
+type K8sController struct {
 	ExcludedNamespaces	[]string
 	SearchNameSpace string
 }
 
-func NewRestController() *RestController {
-	controller := RestController{}
+func NewK8sController() *K8sController {
+	controller := K8sController{}
 	controller.ExcludedNamespaces = []string{"default", "kube-public", "kube-system"}	//controller.SearchNameSpace, _ = k8sutil.GetWatchNamespace()
 	controller.SearchNameSpace = ""
 	return &controller
@@ -70,7 +70,7 @@ func (rl RessourceList) getPoppinsList() *v1alpha.PoppinsList{
 	}
 	return list
 }
-func (rc *RestController) ListNamespaces() ([]string, error){
+func (rc *K8sController) ListNamespaces() ([]string, error){
 	var list []string;
 	rl := RessourceList{}
 	namespaceList := rl.getNamespaceList()
@@ -86,7 +86,7 @@ func (rc *RestController) ListNamespaces() ([]string, error){
 	}
 	return list, nil
 }
-func (rc *RestController) ListPoppinses() ([]string, error){
+func (rc *K8sController) ListPoppinses() ([]string, error){
 	var list []string;
 	rl := RessourceList{}
 	poppinsList := rl.getPoppinsList()
@@ -104,7 +104,7 @@ func (rc *RestController) ListPoppinses() ([]string, error){
 	}
 	return list, nil
 }
-func (rc *RestController) CreatePoppins(dto PoppinsDTO) (*v1alpha.Poppins, error){
+func (rc *K8sController) CreatePoppins(dto PoppinsDTO) (*v1alpha.Poppins, error){
 	// TODO(schorzz): 	take dto and fill ist with default values
 	// 					like a new func or so
 	if dto.ExpireDates.NamespaceExpDate.Before(time.Now()){
@@ -131,7 +131,7 @@ func (rc *RestController) CreatePoppins(dto PoppinsDTO) (*v1alpha.Poppins, error
 	return poppins, nil
 }
 
-func (rc *RestController) UpdatePoppins(namespace string, name string, expireDate time.Time) (*v1alpha.Poppins, error){
+func (rc *K8sController) UpdatePoppins(namespace string, name string, expireDate time.Time) (*v1alpha.Poppins, error){
 	logrus.Infof("local from expiredate: %s",expireDate.Local())
 	if expireDate.Before(time.Now()){
 		expireDate = time.Now().UTC().Add(EXPIRY_TIME)
@@ -160,7 +160,7 @@ func (rc *RestController) UpdatePoppins(namespace string, name string, expireDat
 	return poppins, nil
 }
 
-func (rc *RestController)GetPoppinses() ([]PoppinsListElementResponse, error){
+func (rc *K8sController)GetPoppinses() ([]PoppinsListElementResponse, error){
 	list := []PoppinsListElementResponse{}
 	rl := RessourceList{}
 	poppinsList := rl.getPoppinsList()
@@ -186,7 +186,7 @@ func (rc *RestController)GetPoppinses() ([]PoppinsListElementResponse, error){
 	return list, nil
 
 }
-func (rc *RestController) FilterExpiredPoppinsList(poppinslist []PoppinsListElementResponse, expireDate time.Time) []PoppinsListElementResponse {
+func (rc *K8sController) FilterExpiredPoppinsList(poppinslist []PoppinsListElementResponse, expireDate time.Time) []PoppinsListElementResponse {
 	newList := []PoppinsListElementResponse{}
 
 	for _, elem := range poppinslist{
@@ -198,7 +198,7 @@ func (rc *RestController) FilterExpiredPoppinsList(poppinslist []PoppinsListElem
 
 	return newList
 }
-func (rc *RestController) DeleteDeployments(expiredPoppins []PoppinsListElementResponse, deletables []Deletable) []Deletable{
+func (rc *K8sController) DeleteDeployments(expiredPoppins []PoppinsListElementResponse, deletables []Deletable) []Deletable{
 	deployments := v1.DeploymentList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:			"Deployment",
@@ -230,7 +230,7 @@ func (rc *RestController) DeleteDeployments(expiredPoppins []PoppinsListElementR
 	return deletables
 
 }
-func (rc *RestController) DeletePods(expiredPoppins []PoppinsListElementResponse, deletables []Deletable) []Deletable{
+func (rc *K8sController) DeletePods(expiredPoppins []PoppinsListElementResponse, deletables []Deletable) []Deletable{
 	pods := corev1.PodList{
 		TypeMeta: metav1.TypeMeta{
 			Kind: 		"Pod",
@@ -262,7 +262,7 @@ func (rc *RestController) DeletePods(expiredPoppins []PoppinsListElementResponse
 
 	return deletables
 }
-func (rc *RestController) DeletePoppinses(expiredPoppins []PoppinsListElementResponse, deletables []Deletable) []Deletable{
+func (rc *K8sController) DeletePoppinses(expiredPoppins []PoppinsListElementResponse, deletables []Deletable) []Deletable{
 	poppinses := v1alpha.PoppinsList{
 		TypeMeta: metav1.TypeMeta{
 			Kind: 		"Poppins",

@@ -6,34 +6,21 @@ import (
 	"time"
 )
 
- 
-type HTTPConfigurator struct {
-	Listen string
-}
-type RestConfigurator struct {
-	TimeQueryLayout string
-}
-type PoppinsConfigurator struct {
-	Expiretime time.Duration
+
+type Config struct {
+	SocketAdress 			string
+	HttpTimeQueryLayout 	string
+	NamespaceExpTime		time.Duration
 }
 
-func NewHTTPConfigurator() HTTPConfigurator{
-	config := HTTPConfigurator{}
-	config.Listen = getEnv("REST_PORT","0.0.0.0:8080")
-	return config
-}
-func NewRestConfigurator() RestConfigurator{
-	config := RestConfigurator{}
-	config.TimeQueryLayout = getEnv("REST_QUERYPARAM_TIME_LAYOUT","2006-02-01")
-	return config
-}
-func NewPoppinsConfigurator() PoppinsConfigurator{
-	config := PoppinsConfigurator{}
+func New(config Config)Config {
+	config.SocketAdress = getEnv("REST_PORT","0.0.0.0:8080")
+	config.HttpTimeQueryLayout = getEnv("REST_QUERYPARAM_TIME_LAYOUT","2006-02-01")
 	hours, err := time.ParseDuration(getEnv("POPPINS_EXPIRE_TIME","168h"))
 	if err != nil{
 		hours= time.Hour*168
 	}
-	config.Expiretime = hours
+	config.NamespaceExpTime = hours
 	return config
 }
 

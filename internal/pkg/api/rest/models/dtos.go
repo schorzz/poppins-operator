@@ -11,5 +11,11 @@ type PoppinsDTO struct {
 }
 
 func (dto *PoppinsDTO) initialze() {
+	//fill with default values
+}
+//-------------------------------------------------------
 
+type ListDTO struct {
+	Type 	string 		`json:"type"`
+	Data 	[]string 	`json:"data"`
 }
