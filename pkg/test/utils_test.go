@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
+
 func TestUtils(t *testing.T)  {
 	list := []string{"default", "13"}
 	elem := "default"

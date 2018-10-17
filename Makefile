@@ -22,3 +22,6 @@ create-ns:
 delete-ns:
 	kubectl delete -f deploy/cr.yaml -n poppins
 	kubectl delete -f deploy/busybox-deployment.yaml -n poppins
+test:
+	operator-sdk test local . --namespace poppins
+
