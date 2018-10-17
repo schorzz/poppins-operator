@@ -2,7 +2,7 @@ package rest
 
 import (
 	"github.com/operator-framework/operator-sdk/pkg/sdk"
-	"github.com/schorzz/poppins-operator/pkg/config"
+	"github.com/schorzz/poppins-operator/internal/pkg/configurators"
 	"github.com/schorzz/poppins-operator/pkg/apis/schorzz/v1alpha"
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/apps/v1"
@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	EXPIRY_TIME = config.NewPoppinsConfigurator().Expiretime
+	EXPIRY_TIME = configurators.NewPoppinsConfigurator().Expiretime
 )
 
 type RestController struct {
@@ -104,9 +104,11 @@ func (rc *RestController) ListPoppinses() ([]string, error){
 	}
 	return list, nil
 }
-func (rc *RestController) CreatePoppins(namespace string, name string, expireDate time.Time) (*v1alpha.Poppins, error){
-	if expireDate.Before(time.Now()){
-		expireDate = time.Now().UTC().Add(EXPIRY_TIME)
+func (rc *RestController) CreatePoppins(dto PoppinsDTO) (*v1alpha.Poppins, error){
+	// TODO(schorzz): 	take dto and fill ist with default values
+	// 					like a new func or so
+	if dto.ExpireDates.NamespaceExpDate.Before(time.Now()){
+		dto.ExpireDates.NamespaceExpDate = time.Now().UTC().Add(EXPIRY_TIME)
 	}
 
 	poppins := &v1alpha.Poppins{

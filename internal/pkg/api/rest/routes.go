@@ -3,7 +3,8 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/schorzz/poppins-operator/pkg/config"
+	"github.com/schorzz/poppins-operator/pkg/apis/schorzz/v1alpha"
+	"github.com/schorzz/poppins-operator/internal/pkg/configurators"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -11,34 +12,18 @@ import (
 )
 
 var(
-	TIMEQUERYLAYOUT  = config.NewRestConfigurator().TimeQueryLayout
+	TIMEQUERYLAYOUT  = configurators.NewRestConfigurator().TimeQueryLayout
 )
-
-type ListNamespaceResponse struct {
-	Namespaces []string `json:"namespaces"`
-}
-
-type ListPoppinsesResponse struct {
-	Poppinses []string `json:"poppinses"`
-}
-
-type ListPodsAllNamespaces struct {
-	Pods 	[]string 	`json:"pods"`
-}
 type ListResponse struct {
 	Type 	string 		`json:"type"`
 	Data 	[]string 	`json:"data"`
 }
 type PoppinsListElementResponse struct {
-	Name 		string 		`json:"name"`
-	Namespace 	string 		`json:"namespace"`
-	ExpireDate	time.Time 	`json:"expire_date,omitempty"`
+	Name 		string 				`json:"name"`
+	Namespace 	string 				`json:"namespace"`
+	ExpireDates	v1alpha.PoppinsSpec `json:"expire_dates"`
 }
-type CreatePoppinsRequest struct {
-	Name 		string		`json:"name"`
-	Namespace 	string 		`json:"namespace"`
-	ExpireDate 	time.Time	`json:"expire_date,omitempty"`
-}
+
 type HttpHelper struct {
 	//empty
 }

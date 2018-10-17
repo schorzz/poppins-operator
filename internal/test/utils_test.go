@@ -1,7 +1,7 @@
 package test
 
 import (
-	"github.com/schorzz/poppins-operator/pkg/rest"
+	"github.com/schorzz/poppins-operator/internal/pkg/api/rest"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

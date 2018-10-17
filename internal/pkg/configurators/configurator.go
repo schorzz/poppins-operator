@@ -1,4 +1,4 @@
-package config
+package configurators
 
 import (
 	"os"

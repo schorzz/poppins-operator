@@ -5,8 +5,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/operator-framework/operator-sdk/pkg/sdk"
 	sdkVersion "github.com/operator-framework/operator-sdk/version"
-	"github.com/schorzz/poppins-operator/pkg/config"
-	"github.com/schorzz/poppins-operator/pkg/rest"
+	"github.com/schorzz/poppins-operator/internal/pkg/configurators"
+	"github.com/schorzz/poppins-operator/internal/pkg/api/rest"
 	"github.com/sirupsen/logrus"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"net/http"
@@ -35,7 +35,7 @@ func (a *App) Initialize() {
 }
 func (a *App) Run() {
 
-	config := config.NewHTTPConfigurator()
+	config := configurators.NewHTTPConfigurator()
 	logrus.Infof("starting webserver on "+string(config.Listen))
 	http.ListenAndServe(config.Listen, a.Router)
 }
