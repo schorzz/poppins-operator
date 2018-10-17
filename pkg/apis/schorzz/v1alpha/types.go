@@ -22,5 +22,10 @@ type Poppins struct {
 }
 
 type PoppinsSpec struct {
-	ExpireDate time.Time `json:"expire_date"`
+	NamespaceExpDate 	time.Time `json:"namespace_expire_date"`
+	PodExpDate			time.Time `json:"pod_expire_date"`
+	DeploymentExpDate 	time.Time `json:"deployment_expire_date"`
+	StatefullSetExpDate	time.Time `json:"statefull_set_exp_date"`
+	ReplicaSetExpDate	time.Time `json:"replica_set_exp_date"`
+	IngressExpDate		time.Time `json:"ingress_exp_date"`
 }
