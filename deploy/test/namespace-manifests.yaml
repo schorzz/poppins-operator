@@ -1,0 +1,115 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: poppins-operator
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: poppins-operator
+rules:
+- apiGroups: ["", "schorzz.poppins.com", "*"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: poppins-operator-binding
+subjects:
+- kind: ServiceAccount
+  name: poppins-operator
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: poppins-operator
+  apiGroup: rbac.authorization.k8s.io
+
+
+---
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: poppins-operator
+rules:
+- apiGroups:
+  - schorzz.poppins.com
+  resources:
+  - "*"
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - services
+  - endpoints
+  - persistentvolumeclaims
+  - events
+  - configmaps
+  - secrets
+  - namespaces
+  verbs:
+  - "*"
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - daemonsets
+  - replicasets
+  - statefulsets
+  verbs:
+  - "*"
+
+---
+
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: poppins-operator
+subjects:
+- kind: ServiceAccount
+  name: poppins-operator
+roleRef:
+  kind: Role
+  name: poppins-operator
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: poppins-operator
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: poppins-operator
+  template:
+    metadata:
+      labels:
+        name: poppins-operator
+    spec:
+      serviceAccountName: poppins-operator
+      containers:
+        - name: poppins-operator
+          image: schorzz/poppins-operator:develop
+          ports:
+          - containerPort: 60000
+            name: metrics
+          - containerPort: 8080
+            name: rest
+          command:
+          - poppins-operator
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: OPERATOR_NAME
+              value: "poppins-operator"

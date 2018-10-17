@@ -60,8 +60,6 @@ func GetList(w http.ResponseWriter, r *http.Request, dataname string, f func()([
 	if err != nil {
 		fmt.Fprintf(w, "%s", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-
-		panic(err)
 	}
 	if list == nil{
 		list = []string{}

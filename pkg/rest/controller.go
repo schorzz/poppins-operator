@@ -80,7 +80,7 @@ func (rc *RestController) ListNamespaces() ([]string, error){
 		return nil, err
 	}
 	for _, elem := range namespaceList.Items{
-		if ListContains(rc.ExcludedNamespaces, elem.Name) != true{
+		if ListContains(rc.ExcludedNamespaces, elem.Namespace) != true{
 			list = append(list, elem.Name)
 		}
 	}
@@ -98,7 +98,7 @@ func (rc *RestController) ListPoppinses() ([]string, error){
 	}
 
 	for _, elem := range poppinsList.Items{
-		if !ListContains(rc.ExcludedNamespaces, elem.Name){
+		if !ListContains(rc.ExcludedNamespaces, elem.Namespace){
 			list = append(list, elem.Name)
 		}
 	}
@@ -176,8 +176,10 @@ func (rc *RestController)GetPoppinses() ([]PoppinsListElementResponse, error){
 		poppins.Namespace = elem.Namespace
 		poppins.Name = elem.Name
 		poppins.ExpireDate = elem.Spec.ExpireDate
+		if !ListContains(rc.ExcludedNamespaces, poppins.Namespace){
+			list = append(list, poppins)
+		}
 
-		list = append(list, poppins)
 	}
 	return list, nil
 
